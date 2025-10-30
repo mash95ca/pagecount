@@ -1,0 +1,42 @@
+import os
+import csv
+from PyPDF2 import PdfReader
+from tabulate import tabulate
+
+def count_pdf_pages(file_paths):
+    results = []
+    for path in file_paths:
+        file_name = os.path.basename(path)
+        try:
+            with open(path, "rb") as file:
+                reader = PdfReader(file)
+                num_pages = len(reader.pages)
+                results.append([file_name, path, num_pages])
+        except FileNotFoundError:
+            results.append([file_name, path, "File Not Found"])
+        except Exception as e:
+            results.append([file_name, path, f"Error: {str(e)}"])
+    return results
+
+def save_to_csv(results, output_file="pdf_page_counts.csv"):
+    with open(output_file, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["File Name", "Full Path", "Page Count"])
+        writer.writerows(results)
+    return output_file
+
+def main():
+    print("Enter PDF file paths separated by commas:")
+    input_paths = input().strip().split(",")
+    file_paths = [p.strip() for p in input_paths if p.strip()]
+
+    results = count_pdf_pages(file_paths)
+
+    print("\nPDF Page Count Summary:")
+    print(tabulate(results, headers=["File Name", "Full Path", "Page Count"], tablefmt="grid"))
+
+    csv_path = save_to_csv(results)
+    print(f"\n✅ Results have been saved to: {os.path.abspath(csv_path)}")
+
+if __name__ == "__main__":
+    main()
